@@ -1,4 +1,5 @@
 import os
+import re
 from dotenv import load_dotenv
 # from notebook.pdf_loader import groq_api_key
 from src.vectorstore import FaissVectorStore
@@ -7,7 +8,7 @@ from langchain_groq import ChatGroq
 load_dotenv()
 
 class RAGsearch:
-    def __init__(self, persist_dir: str = "faiss_store", embedding_model: str = "all-MiniLM-L6-v2", llm_model: str = "llama-3.1-8b-instant"):
+    def __init__(self, persist_dir: str = "faiss_store", embedding_model: str = "all-MiniLM-L6-v2", llm_model: str = "qwen/qwen3.6-27b"):
         os.environ["TOKENIZERS_PARALLELISM"] = "false"
         self.vectorstore = FaissVectorStore(persist_dir, embedding_model)
         # Load or Build vectorstore
@@ -21,7 +22,7 @@ class RAGsearch:
         else:
             self.vectorstore.load()
         groq_api_key = os.getenv("GROQ_API_KEY")
-        self.llm = ChatGroq(groq_api_key=groq_api_key, model_name=llm_model, temperature=0.1,max_tokens=1024)
+        self.llm = ChatGroq(groq_api_key=groq_api_key, model_name=llm_model, temperature=0.1, max_tokens=4096)
         print(f"[INFO] Groq LLM initialized: {llm_model}")
 
     def search_and_summarize(self, query:str, top_k: int = 5) -> str:
@@ -30,7 +31,15 @@ class RAGsearch:
         context = "\n\n".join(texts)
         if not context:
             return "No relevant documents found."
-        prompt = f"""Summarize the following context for the query: '{query}'\n\n Context:{context}\n\n""" 
+        prompt = f"""Based strictly on the following context, answer the query: '{query}'
+Keep the answer direct and factual. If there are multiple items, list all of them. Do not include any of your internal thinking, draft processes, or extra conversational text.
+
+Context:
+{context}
+""" 
         response = self.llm.invoke([prompt])
-        return response.content           
+        content = response.content
+        # Strip out the <think>...</think> reasoning blocks that Qwen models generate
+        content = re.sub(r'<think>.*?(?:</think>\n*|$)', '', content, flags=re.DOTALL).strip()
+        return content           
         

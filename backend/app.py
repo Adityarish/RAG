@@ -59,7 +59,7 @@ def query_rag():
         return jsonify({"error": "Missing 'query' in request body."}), 400
 
     query = data['query']
-    top_k = data.get('top_k', 3)
+    top_k = data.get('top_k', 10)
 
     try:
         summary = rag_search.search_and_summarize(query, top_k=top_k)
@@ -114,4 +114,4 @@ def upload_file():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=os.getenv("PORT", 5173))
+    app.run(debug=True, host='0.0.0.0', port=os.getenv("PORT", 5001))
