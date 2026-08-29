@@ -9,7 +9,7 @@ function App() {
 
   const handleSearch = async () => {
     try {
-      const response = await axios.post('http://localhost:5001/api/query', { query });
+      const response = await axios.post('https://rag-1-rfqd.onrender.com/api/query', { query });
       setSummary(response.data.summary);
     } catch (error) {
       console.error('Error fetching summary:', error);
@@ -31,7 +31,7 @@ function App() {
       setUploadStatus('Uploading...');
       const formData = new FormData();
       formData.append('file', file);
-      const res = await axios.post('http://localhost:5001/api/upload', formData, {
+      const res = await axios.post('https://rag-1-rfqd.onrender.com/api/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setUploadStatus(res.data?.message || 'Uploaded');
