@@ -2,6 +2,7 @@ import os
 import re
 from dotenv import load_dotenv
 # from notebook.pdf_loader import groq_api_key
+# pyrefly: ignore [missing-import]
 from src.vectorstore import FaissVectorStore
 from langchain_groq import ChatGroq
 
@@ -16,6 +17,7 @@ class RAGsearch:
         faiss_path = os.path.join(persist_dir, "faiss.index")
         meta_path = os.path.join(persist_dir, "metadata.pkl")
         if not (os.path.exists(faiss_path) and os.path.exists(meta_path)):
+            # pyrefly: ignore [missing-import]
             from src.data_loader import load_all_documents
             docs = load_all_documents("data")
             self.vectorstore.build_from_documents(docs)
